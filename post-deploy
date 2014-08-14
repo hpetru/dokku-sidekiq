@@ -20,7 +20,7 @@ if [[ -f "$DOKKU_ROOT/$APP/DEPLOY_SIDEKIQ" ]]; then
   fi
 
   # start a copy of the app and run sidekiq
-
+  touch "$DOKKU_ROOT/$APP/WORKER"
   id=$(docker run -d $IMAGE --cidfile="$DOKKU_ROOT/$APP/WORKER" /exec bundle exec sidekiq)
   echo "-----> Sidekiq worker started with ID $id"
 
