@@ -22,6 +22,7 @@ if [[ -f "$DOKKU_ROOT/$APP/DEPLOY_SIDEKIQ" ]]; then
   # start a copy of the app and run sidekiq
   DOCKER_ARGS=$(: | pluginhook docker-args $APP)
   id=$(docker run $DOCKER_ARGS -d $IMAGE  /exec bundle exec sidekiq)
+  echo $id > "$DOKKU_ROOT/$APP/WORKER"
   echo "-----> Sidekiq worker started with ID $id"
 
 fi
