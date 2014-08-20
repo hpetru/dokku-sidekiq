@@ -9,20 +9,35 @@ if [[ -f "$DOKKU_ROOT/$APP/DEPLOY_SIDEKIQ" ]]; then
   echo "-----> Starting another copy for a worker for app $APP from image $IMAGE..."
 
   # kill the previous worker when running
-  if [[ -f "$DOKKU_ROOT/$APP/WORKER" ]]; then
-        oldid=$(< "$DOKKU_ROOT/$APP/WORKER")
+  if [[ -f "$DOKKU_ROOT/$APP/WORKER_1" ]]; then
+        oldid=$(< "$DOKKU_ROOT/$APP/WORKER_1")
         if docker inspect $oldid > /dev/null
         then
-          echo "-----> Killing old worker app $oldid"
+          echo "-----> Killing old worker 1 app $oldid"
           docker kill $oldid > /dev/null
         fi
-        rm $DOKKU_ROOT/$APP/WORKER
+        rm $DOKKU_ROOT/$APP/WORKER_1
+  fi
+  # kill the previous worker when running
+  if [[ -f "$DOKKU_ROOT/$APP/WORKER_2" ]]; then
+        oldid=$(< "$DOKKU_ROOT/$APP/WORKER_2")
+        if docker inspect $oldid > /dev/null
+        then
+          echo "-----> Killing old worker 2 app $oldid"
+          docker kill $oldid > /dev/null
+        fi
+        rm $DOKKU_ROOT/$APP/WORKER_2
   fi
 
   # start a copy of the app and run sidekiq
   DOCKER_ARGS=$(: | pluginhook docker-args $APP)
-  id=$(docker run $DOCKER_ARGS -d $IMAGE  /exec bundle exec sidekiq)
-  echo $id > "$DOKKU_ROOT/$APP/WORKER"
-  echo "-----> Sidekiq worker started with ID $id"
-
+  
+  id1=$(docker run $DOCKER_ARGS -d $IMAGE  /exec bundle exec sidekiq)
+  echo $id1 > "$DOKKU_ROOT/$APP/WORKER_1"
+  
+  id2=$(docker run $DOCKER_ARGS -d $IMAGE  /exec bundle exec sidekiq -C /app/config/sidekiq_notifications.yml)
+  echo $id2 > "$DOKKU_ROOT/$APP/WORKER_2"
+  
+  echo "-----> Sidekiq worker 1 started with ID $id1"
+  echo "-----> Sidekiq worker 2 started with ID $id2"
 fi
